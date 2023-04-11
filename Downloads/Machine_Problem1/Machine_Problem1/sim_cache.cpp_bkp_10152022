@@ -1,0 +1,251 @@
+#include <cstdlib>
+#include <iostream>
+#include "getopt.h"
+#include <unistd.h>
+#include <cstring>
+#include <limits.h>
+#include <bits/stdc++.h>
+
+#define HERO 0
+using namespace std;
+
+/* Always use a 32-bit variable to hold memory addresses*/
+typedef uint32_t mem_addr_t;
+
+/* a struct that groups cache parameters together */
+typedef struct
+{
+    int B;                       /* Block size in bytes */
+    int l1s;                       /* L1 cache size in bytes*/
+    int l1a;                       /* L1 set-associativity (1 is direct-mapped). */
+    int l2s;                       /* L2 cache size in bytes*/
+    int l2a;                       /* L2 set-associativity (1 is direct-mapped). */
+    int rp;                       /*  REPLACEMENT_POLICY: Positive integer. 0 for LRU, 1 for PLRU, 2 for Optimal. */
+    int ip;                       /* INCLUSION_PROPERTY: Positive integer. 0 for non-inclusive, 1 for inclusive. */
+    
+} cache_param_t;
+
+int verbosity;
+class LRUCache {
+    // store keys of cache
+    list<int> dq;
+  
+    // store references of key in cache
+    unordered_map<int, list<int>::iterator> ma;
+    int csize; // maximum capacity of cache
+  
+public:
+    LRUCache(int);
+    void refer(int);
+    void display();
+};
+  
+// Declare the size
+LRUCache::LRUCache(int n)
+{
+    csize = n;
+}
+  
+// Refers key x with in the LRU cache
+void LRUCache::refer(int x)
+{
+    // not present in cache
+    if (ma.find(x) == ma.end()) {
+        // cache is full
+        if (dq.size() == csize) {
+            // delete least recently used element
+            int last = dq.back();
+  
+            // Pops the last element
+            dq.pop_back();
+  
+            // Erase the last
+            ma.erase(last);
+        }
+    }
+  
+    // present in cache
+    else
+        dq.erase(ma[x]);
+  
+    // update reference
+    dq.push_front(x);
+    ma[x] = dq.begin();
+}
+  
+// Function to display contents of cache
+void LRUCache::display()
+{
+  
+    // Iterate in the deque and print
+    // all the elements in it
+    for (auto it = dq.begin(); it != dq.end();
+         it++)
+        cout << (*it) << " ";
+  
+    cout << endl;
+}
+/* printUsage - Print usage info */
+void printUsage(char* argv[])
+{
+    printf("Usage: %s [-hv] -s <num> -E <num> -b <num> -t <file>\n", argv[0]);
+    printf("Options:\n");
+    printf("  -h         Print this help message.\n");
+    printf("  -v         Optional verbose flag.\n");
+    printf("  -B <num>   Block size in bytes.\n");
+    printf("  -l <num>   L1 cache size in bytes.\n");
+    printf("  -L <num>   L1 set-associativity (1 is direct-mapped).\n");
+    printf("  -c <num>   L2 cache size in bytes.\n");
+    printf("  -C <num>   L2 set-associativity (1 is direct-mapped).\n");
+    printf("  -r <num>   REPLACEMENT_POLICY: Positive integer. 0 for LRU, 1 for PLRU, 2 for Optimal.\n");
+    printf("  -i <num>   INCLUSION_PROPERTY: Positive integer. 0 for non-inclusive, 1 for inclusive.\n");
+    printf("  -t <file>  Trace file.\n");
+    printf("\nExamples:\n");
+    printf("  %s -B 32 -l 8192 -L 4 -c 262144 -C 8 -r 0 -i 0 -t compress_trace\n", argv[0]);
+    //printf("  %s -B 32 -l 8192 -L 4 -c 262144 -C 8 -r 0 -i 0 -t compress_trace\n", argv[0]);
+    exit(0);
+}
+
+void printConfig(cache_param_t par,char* trace_file);
+
+
+int main(int argc, char** argv)
+{
+    cache_param_t par;
+    
+    LRUCache ca(4);
+    
+
+    bzero(&par, sizeof(par));
+
+    char* trace_file;
+    char c;
+
+    //cout << optarg << "enjoy " << getopt(argc, argv, "B:l:L:c:C:r:i:t:v:h") << endl;
+    for(int i=0;i<argc;i++){
+        if (argc < 8) {
+                    cout << argc <<endl;
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+            }
+        if (strcmp(argv[i], "-B") == 0) {
+                if (argc < i+1) {
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+                }
+                else {
+                    par.B = atoi(argv[i+1]); //(int)(*argv[i+1] - '0');
+                    //printf("Number of attached UEs = %d\n", par.B);
+                }
+            }
+            if (strcmp(argv[i], "-l") == 0) {
+                if (argc < i+1) {
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+                }
+                else {
+                    par.l1s = atoi(argv[i+1]); //(int)(*argv[i+1] - '0');
+                    //printf("Number of attached UEs = %d\n", par.l1s);
+                }
+            }
+            if (strcmp(argv[i], "-L") == 0) {
+                if (argc < i+1) {
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+                }
+                else {
+                    par.l1a = atoi(argv[i+1]); //(int)(*argv[i+1] - '0');
+                    //printf("Number of attached UEs = %d\n", par.l1a);
+                }
+            }
+            if (strcmp(argv[i], "-c") == 0) {
+                if (argc < i+1) {
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+                }
+                else {
+                    par.l2s = atoi(argv[i+1]); //(int)(*argv[i+1] - '0');
+                    //printf("Number of attached UEs = %d\n", par.l2s);
+                }
+            }
+            if (strcmp(argv[i], "-C") == 0) {
+                if (argc < i+1) {
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+                }
+                else {
+                    par.l2a = atoi(argv[i+1]); //(int)(*argv[i+1] - '0');
+                    //printf("Number of attached UEs = %d\n", par.l2a);
+                }
+            }
+            if (strcmp(argv[i], "-r") == 0) {
+                if (argc < i+1) {
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+                }
+                else {
+                    par.rp = atoi(argv[i+1]); //(int)(*argv[i+1] - '0');
+                    //printf("Number of attached UEs = %d\n", par.rp);
+                }
+            }
+            if (strcmp(argv[i], "-i") == 0) {
+                if (argc < i+1) {
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+                }
+                else {
+                    par.ip = atoi(argv[i+1]); //(int)(*argv[i+1] - '0');
+                    //printf("Number of attached UEs = %d\n", par.ip);
+                }
+            }
+            if (strcmp(argv[i], "-t") == 0) {
+                if (argc < i+1) {
+                    printf("ERROR: Invalid arguments.\n");
+                    printUsage(argv);
+                    exit(1);
+                }
+                else {
+                   trace_file = argv[i+1]; //(int)(*argv[i+1] - '0');
+                    //printf("Trace file given  = %s\n", trace_file);
+                }
+            }
+    }
+    printConfig(par,trace_file);
+    ca.refer(1);
+    ca.refer(2);
+    ca.refer(3);
+    ca.refer(1);
+    ca.refer(4);
+    ca.refer(5);
+    ca.display();
+
+    //if (par.B != argv[2] || par.l1s != argv[4] || par.l1a != argv[6] || par.l2s != argv[8] || par.l2a != argv[10]|| par.rp != argv[12]|| par.ip != argv[14]|| trace_file == NULL)
+    //{
+    //    printf("%s: Missing required command line argument\n", argv[0]);
+    //    printUsage(argv);
+    //    exit(1);
+   // }
+    //printConfig(par,trace_file);
+
+    return 0;
+}
+
+void printConfig(cache_param_t par,char* trace_file){
+    cout<<"===== Simulator configuration =====" << endl;
+    cout<<"BLOCKSIZE:             " << par.B << endl;
+    cout<<"L1_SIZE:               " << par.l1s << endl;
+    cout<<"L1_ASSOC:              " << par.l1a << endl;
+    cout<<"L2_SIZE:               " << par.l2s << endl;
+    cout<<"L2_ASSOC:              " << par.l2a << endl;
+    cout<<"REPLACEMENT POLICY:    " << par.rp << endl;
+    cout<<"INCLUSION PROPERTY:    " << par.ip << endl;
+    cout<<"trace_file:            " << trace_file << endl;
+}

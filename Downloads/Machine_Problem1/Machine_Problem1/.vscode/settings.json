@@ -1,0 +1,18 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/media/sf_Sanjay/misc/Downloads/Machine_Problem1",
+            "binaryPath": "/media/sf_Sanjay/misc/Downloads/Machine_Problem1/sim_cache",
+            "binaryArgs": []
+        }
+    ],
+    "files.associations": {
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "algorithm": "cpp",
+        "sstream": "cpp",
+        "iosfwd": "cpp",
+        "string": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
